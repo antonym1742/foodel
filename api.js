@@ -14,6 +14,7 @@ const app = express();
 // Constants imported from .env
 const port = Number(process.env.PORT) || 3000;
 const saltRounds = Number(process.env.SALT_ROUNDS) || 10;
+const jwtSecret = String(process.env.JWT_SECRET) || "some default string that you should overwrite with the JWT_SECRET env variable";
 
 app.use(express.json());
 app.use(cors());
@@ -127,7 +128,7 @@ app.post('/register', async (req,res) => {
 		};
 
 		// Signing
-		const token = jwt.sign(payload, process.env.JWT_SECRET, {
+		const token = jwt.sign(payload, jwtSecret, {
 			expiresIn: '30m'
 		});
 
@@ -172,7 +173,7 @@ app.post('/login', async (req,res) => {
 		};
 
 		// Signing
-		const token = jwt.sign(payload, process.env.JWT_SECRET, {
+		const token = jwt.sign(payload, jwtSecret, {
 			expiresIn: '30m'
 		});
 
@@ -207,5 +208,8 @@ app.get('/teapot', async (req,res) => {
 });
 
 app.listen(port, () => {
+  if(process.env.JWT_SECRET == null){
+    console.log("WARNING: JWT secret env variable not set, I suggest you to set one");
+  }
 	console.log(`App listening on port ${port}`);
 });
