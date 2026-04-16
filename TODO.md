@@ -1,15 +1,15 @@
 # TODO List
 - [ ] Gestione profilo utente
-    - [ ] Registrazione con scelta di tipologia
-        - [ ] Ristoratore
+    - [x] Registrazione con scelta di tipologia
+        - [x] Ristoratore
             - [ ] Numero di telefono
-            - [ ] Partita IVA
-            - [ ] Indirizzo
-            - [ ] Coordinate bancarie per ricevereil danaro e pagare la quota d'utilizzo
+            - [x] Partita IVA
+            - [x] Indirizzo
+            - [x] Coordinate bancarie per ricevere il danaro e pagare la quota d'utilizzo
         - [ ] Cliente
             - [ ] Numero di telefono
-            - [ ] Indirizzo
-            - [ ] Metodo di pagamento
+            - [x] Indirizzo
+            - [x] Metodo di pagamento
     - [ ] Modifica dati personali
     - [ ] Cancellazione profilo
 - [ ] Gestione ristorante/i
