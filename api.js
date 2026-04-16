@@ -226,8 +226,35 @@ app.get('/users/me', authenticate, async (req,res) => {
   }
 });
 
-app.delete('/users/me', (req,res) => {
-	res.status(423).send("Under development");
+app.delete('/users/me', authenticate, async (req,res) => {
+  try {
+    await client.connect();
+    const db = client.db("foodel");
+    const users = db.collection("users");
+
+    const user = await users.findOne(
+      { _id: new ObjectID(req.user.sub) },
+      { projection: { password: 0 } }
+    );
+
+    if (!user) return res.status(404).send("You already don't exist");
+
+    const result = await users.deleteOne({ _id: user._id });
+    await client.close();
+
+    if (result.deletedCount == 1){
+      console.log(`Deleted user ${user.email}`);
+      return res.status(200).send("you got deleted");
+    }
+    else {
+      console.log("Attempted user deletion failed");
+      return res.status(400).send("something went wrong and I don't know what it could be")
+    }
+  }
+  catch(err){
+    console.error("Error in DELETE /users/me: ", err);
+    res.status(500).send("Server error");
+  }
 });
 
 app.get('/teapot', async (req,res) => {

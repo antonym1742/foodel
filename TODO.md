@@ -11,7 +11,7 @@
             - [x] Indirizzo
             - [x] Metodo di pagamento
     - [ ] Modifica dati personali
-    - [ ] Cancellazione profilo
+    - [x] Cancellazione profilo
 - [ ] Gestione ristorante/i
     - [ ] Dettagli ristorante
         - [ ] Nome
