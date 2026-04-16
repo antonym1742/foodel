@@ -211,5 +211,5 @@ app.listen(port, () => {
   if(process.env.JWT_SECRET == null){
     console.log("WARNING: JWT secret env variable not set, I suggest you to set one");
   }
-	console.log(`App listening on port ${port}`);
+	console.log(`App listening on port ${port}, visit http://127.0.0.1:${port}`);
 });
