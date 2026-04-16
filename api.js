@@ -30,6 +30,21 @@ app.use(cors());
  * }
  ******/
 
+function authenticate(req, res, next) {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1]; // Expects "Bearer <token>"
+
+    if (!token) return res.status(401).send('Missing token');
+
+    try {
+        const decoded = jwt.verify(token, jwtSecret);
+        req.user = decoded;
+        next();
+    } catch (err) {
+        return res.status(403).send('Invalid or expired token');
+    }
+}
+
 app.post('/register', async (req,res) => {
 	const emailRegex = /^[\w\-\.]+(\+[\w\-\.]+)?@([\w-]+\.)+[\w-]{2,}$/;
 	let missingFields = 0;
@@ -188,17 +203,27 @@ app.post('/login', async (req,res) => {
 	}
 });
 
-app.get('/users/me', (req,res) => {
-	res.json({
-		"id": 1234,
-		"email": "mariorossi@gmail.de",
-		"restaurateur": true,
-		"address": {
-			"street":"via Pascoli 4",
-			"city":"Ceriano Laghetto",
-			"zip":"20816"
-		}
-	}).status(200);
+app.get('/users/me', authenticate, async (req,res) => {
+  try {
+    await client.connect();
+    const db = client.db("foodel");
+    const users = db.collection("users");
+
+    const user = await users.findOne(
+      { _id: new ObjectID(req.user.sub) },
+      { projection: { password: 0 } }
+    );
+
+    if (!user) return res.status(404).send("You don't exist");
+
+    await client.close;
+
+    console.log(`User ${user.email} got requested`);
+    res.status(200).json(user);
+  } catch(err) {
+    console.error("Error in GET /users/me: ", err);
+    res.status(500).send("Server error");
+  }
 });
 
 app.delete('/users/me', (req,res) => {
