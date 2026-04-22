@@ -232,15 +232,11 @@ app.delete('/users/me', authenticate, async (req,res) => {
     const db = client.db("foodel");
     const users = db.collection("users");
 
-    const user = await users.findOne({ _id: new ObjectID(req.user.sub)});
-
-    if (!user) return res.status(500).send("this is awkward, this should not be possible");
-
-    const result = await users.deleteOne({ _id: user._id });
+    const result = await users.deleteOne({ _id: new ObjectID(req.user.sub)});
     await client.close();
 
     if (result.deletedCount == 1){
-      console.log(`Deleted user ${user.email}`);
+      console.log(`Deleted user`);
       return res.status(200).send("you got deleted");
     }
     else {
@@ -270,11 +266,7 @@ app.patch('/users/me', authenticate, async (req,res) => {
       return res.status(403).send("Can't update the specified fields");
     }
 
-    const user = await users.findOne({ _id: new ObjectID(req.user.sub) })
-
-    if (!user) return res.status(500).send("this is awkward, this should not be possible");
-
-    const query = { _id: user._id };
+    const query = { _id: new ObjectID(req.user.sub)};
     const update = { $set: req.body };
     const options = { upsert: false };
     await users.updateOne(query, update, options);
