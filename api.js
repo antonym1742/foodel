@@ -144,7 +144,7 @@ app.post('/register', async (req,res) => {
 		// JWT
 		const payload = {
 			email: newUser.email,
-			sub: newUser._id,
+			id: newUser._id,
 			restaurateur: newUser.restaurateur
 		};
 
@@ -189,7 +189,7 @@ app.post('/login', async (req,res) => {
 		// JWT
 		const payload = {
 			email: user.email,
-			sub: user._id,
+			id: user._id,
 			restaurateur: user.restaurateur
 		};
 
@@ -213,7 +213,7 @@ app.get('/users/me', authenticate, async (req,res) => {
     const users = db.collection(users_coll_name);
 
     const user = await users.findOne(
-      { _id: new ObjectID(req.user.sub) },
+      { _id: new ObjectID(req.user.id) },
       { projection: { password: 0 } }
     );
 
@@ -235,7 +235,7 @@ app.delete('/users/me', authenticate, async (req,res) => {
     const db = client.db(db_name);
     const users = db.collection(users_coll_name);
 
-    const result = await users.deleteOne({ _id: new ObjectID(req.user.sub)});
+    const result = await users.deleteOne({ _id: new ObjectID(req.user.id)});
     await client.close();
 
     if (result.deletedCount == 1){
@@ -269,7 +269,7 @@ app.patch('/users/me', authenticate, async (req,res) => {
       return res.status(403).send("Can't update the specified fields");
     }
 
-    const query = { _id: new ObjectID(req.user.sub)};
+    const query = { _id: new ObjectID(req.user.id)};
     const update = { $set: req.body };
     const options = { upsert: false };
     await users.updateOne(query, update, options);
