@@ -232,12 +232,9 @@ app.delete('/users/me', authenticate, async (req,res) => {
     const db = client.db("foodel");
     const users = db.collection("users");
 
-    const user = await users.findOne(
-      { _id: new ObjectID(req.user.sub) },
-      { projection: { password: 0 } }
-    );
+    const user = await users.findOne({ _id: new ObjectID(req.user.sub)});
 
-    if (!user) return res.status(404).send("You already don't exist");
+    if (!user) return res.status(500).send("this is awkward, this should not be possible");
 
     const result = await users.deleteOne({ _id: user._id });
     await client.close();
@@ -256,6 +253,39 @@ app.delete('/users/me', authenticate, async (req,res) => {
     res.status(500).send("Server error");
   }
 });
+
+app.patch('/users/me', authenticate, async (req,res) => {
+  try {
+    await client.connect();
+    const db = client.db("foodel");
+    const users = db.collection("users");
+
+    // questo endpoint serve a modificare solo le informazioni accessorie all'account,
+    // per email password e tipo di profilo ci saranno degli endpoint dedicati con
+    // verifiche aggiuntive
+    if (req.body.password != null ||
+        req.body.restaurateur != null ||
+        req.body._id != null ||
+        req.body.email != null){
+      return res.status(403).send("Can't update the specified fields");
+    }
+
+    const user = await users.findOne({ _id: new ObjectID(req.user.sub) })
+
+    if (!user) return res.status(500).send("this is awkward, this should not be possible");
+
+    const query = { _id: user._id };
+    const update = { $set: req.body };
+    const options = { upsert: false };
+    await users.updateOne(query, update, options);
+
+    await client.close();
+    return res.status(200).send("Update successful");
+  } catch(err) {
+    console.error("Error in PATCH /users/me:", err);
+    res.status(500).send("Server error");
+  }
+})
 
 app.get('/teapot', async (req,res) => {
 	console.log('/teapot test');
