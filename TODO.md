@@ -1,5 +1,5 @@
 # TODO List
-- [ ] Gestione profilo utente
+- [x] Gestione profilo utente
     - [x] Registrazione con scelta di tipologia
         - [x] Ristoratore
             - [x] Numero di telefono
