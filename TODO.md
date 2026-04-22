@@ -17,6 +17,7 @@
         - [ ] Nome
         - [ ] Indirizzo
         - [ ] Menu
+    - [x] Apertura ristorante
     - [ ] Piatti
         - [ ] Nome
         - [ ] Tipologia
