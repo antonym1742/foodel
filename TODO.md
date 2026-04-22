@@ -10,7 +10,7 @@
             - [x] Numero di telefono
             - [x] Indirizzo
             - [x] Metodo di pagamento
-    - [ ] Modifica dati personali
+    - [x] Modifica dati personali
     - [x] Cancellazione profilo
 - [ ] Gestione ristorante/i
     - [ ] Dettagli ristorante
