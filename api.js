@@ -15,6 +15,9 @@ const app = express();
 const port = Number(process.env.PORT) || 3000;
 const saltRounds = Number(process.env.SALT_ROUNDS) || 10;
 const jwtSecret = String(process.env.JWT_SECRET) || "some default string that you should overwrite with the JWT_SECRET env variable";
+const db_name = String(process.env.DB_NAME) || "delivery service"
+const users_coll_name = String(process.env.USERS_COLL) || "users"
+const restaurants_coll_name = String(process.env.RESTAURANTS_COLL) || "restaurants"
 
 app.use(express.json());
 app.use(cors());
@@ -84,8 +87,8 @@ app.post('/register', async (req,res) => {
 	try {
 		// Connecting to db
 		await client.connect();
-		const db = client.db("foodel");
-		const users = db.collection("users");
+		const db = client.db(db_name);
+		const users = db.collection(users_coll_name);
 		console.log('db connected');
 
 		// Dupes check
@@ -166,8 +169,8 @@ app.post('/login', async (req,res) => {
 	try{
 		// Connection to DB
 		await client.connect();
-		const db = client.db("foodel");
-		const users = db.collection("users");
+		const db = client.db(db_name);
+		const users = db.collection(users_coll_name);
 
 		// Checking if the user exists
 		const user = await users.findOne({ email });
@@ -206,8 +209,8 @@ app.post('/login', async (req,res) => {
 app.get('/users/me', authenticate, async (req,res) => {
   try {
     await client.connect();
-    const db = client.db("foodel");
-    const users = db.collection("users");
+    const db = client.db(db_name);
+    const users = db.collection(users_coll_name);
 
     const user = await users.findOne(
       { _id: new ObjectID(req.user.sub) },
@@ -229,8 +232,8 @@ app.get('/users/me', authenticate, async (req,res) => {
 app.delete('/users/me', authenticate, async (req,res) => {
   try {
     await client.connect();
-    const db = client.db("foodel");
-    const users = db.collection("users");
+    const db = client.db(db_name);
+    const users = db.collection(users_coll_name);
 
     const result = await users.deleteOne({ _id: new ObjectID(req.user.sub)});
     await client.close();
@@ -253,8 +256,8 @@ app.delete('/users/me', authenticate, async (req,res) => {
 app.patch('/users/me', authenticate, async (req,res) => {
   try {
     await client.connect();
-    const db = client.db("foodel");
-    const users = db.collection("users");
+    const db = client.db(db_name);
+    const users = db.collection(users_coll_name);
 
     // questo endpoint serve a modificare solo le informazioni accessorie all'account,
     // per email password e tipo di profilo ci saranno degli endpoint dedicati con
@@ -277,6 +280,10 @@ app.patch('/users/me', authenticate, async (req,res) => {
     console.error("Error in PATCH /users/me:", err);
     res.status(500).send("Server error");
   }
+})
+
+app.post('/restaurant/new', authenticate, async (req,res) => {
+
 })
 
 app.get('/teapot', async (req,res) => {
