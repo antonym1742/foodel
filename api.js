@@ -53,6 +53,9 @@ app.post('/register', async (req,res) => {
 	let missingFields = 0;
 	// Ogni check fallito imposta un bit su 1, poi il client puo' controllare i bit flippati per capire cosa manca
 	// Each failed check flips a bit to 1, then the client can check what bits are flipped to see what's missing
+  // quando ho scritto sto codice pensavo fosse un'idea figa per risparmiare un po' di traffico per la risposta dall'api,
+  // ora mi rendo conto che è una merda da debuggare o replicare. Se stai leggendo questo commento ti suggerisco
+  // di non fare come me
 	if(req.body.email == null){ console.log('Missing field: email'); missingFields += 1 }       // 0000000000001
 	else if(!emailRegex.test(req.body.email)){
 		console.log('Invalid field: email'); missingFields += 1
@@ -109,7 +112,6 @@ app.post('/register', async (req,res) => {
 		if(req.body.restaurateur === true){
 			console.log('New restaureateur')
 			newUser = {
-
 				email: req.body.email,
 				password: hashedPassword,
         phone: req.body.phone,
@@ -283,7 +285,58 @@ app.patch('/users/me', authenticate, async (req,res) => {
 })
 
 app.post('/restaurant/new', authenticate, async (req,res) => {
+  if (req.user.restaurateur != true){
+    console.log(`/restaurant/new: ${req.user.email} tried to open a restaurant but he isn't a restaurateur`)
+    return res.status(403).send("you're not a restaurateur")
+  }
 
+  if (req.body.name == null ||
+      req.body.address == null ||
+      req.body.address.city == null ||
+      req.body.address.cap == null ||
+      req.body.address.street == null){
+    console.log("/restaurant/new: missing fields")
+    return res.status(400).send("missing fields")
+  }
+
+	try {
+		// Connecting to db
+		await client.connect();
+		const db = client.db(db_name);
+		const restaurants = db.collection(restaurants_coll_name);
+		console.log('db connected');
+
+		// Dupes check
+		const existingRestaurant = await restaurants.findOne({name: req.body.name});
+		if (existingRestaurant){
+			console.log(`/restaurant/new: existingRestaurant: ${existingRestaurant.name}`)
+			return res.status(409).send('Name already in use');
+		}
+
+    const addressOccupied = await restaurants.findOne({address: req.body.address})
+    if (addressOccupied) {
+      console.log(`/restaurant/new: Address already occupied from ${addressOccupied}`)
+      return res.status(409).send(`Address occupied from ${addressOccupied.name}`)
+    }
+
+    let newRestaurant = {
+      name: req.body.name,
+      address: req.body.address,
+      menu: {},
+      owner: {
+        _id: req.user.id,
+        email: req.user.email
+      }
+    }
+
+    await restaurants.insertOne(newRestaurant);
+  } catch(err) {
+    console.error("Error in POST /restaurant/new:", err)
+    res.status(500).send("Server error")
+  }
+
+  console.log(`${req.user.email} registered restaurant ${req.body.name}`)
+  return res.status(200).send("Restaurant created")
 })
 
 app.get('/teapot', async (req,res) => {
